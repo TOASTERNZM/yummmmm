@@ -2,24 +2,91 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bread</title>
 <style>
   html, body {
     margin: 0;
-    height: 1500%;
+    min-height: 100%;
     background: #1a1a1a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-family: system-ui, sans-serif;
+    color: #fff;
   }
-  img {
-    max-width: 15000%;
-    max-height: 15000%;
-    object-fit: contain;
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 24px;
+  }
+  .card {
+    background: #262626;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    border: 3px solid transparent;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,.5); }
+  .card.playing { border-color: #4ade80; }
+  .card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+  }
+  .card .title {
+    padding: 10px 12px;
+    font-size: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 </style>
 </head>
 <body>
-<img src="kirk.png" alt="Bread">
+<div id="grid"></div>
+
+<script>
+  const cards = [
+    { title: "Kirk",   image: "kirk.png",   song: "song1.mp3" },
+    { title: "Card 2", image: "photo2.png", song: "song2.mp3" },
+    { title: "Card 3", image: "photo3.png", song: "song3.mp3" },
+  ];
+
+  const grid = document.getElementById("grid");
+  let currentAudio = null;
+  let currentCard = null;
+
+  cards.forEach(c => {
+    const el = document.createElement("div");
+    el.className = "card";
+    el.innerHTML = `
+      <img src="${c.image}" alt="${c.title}">
+      <div class="title"><span>${c.title}</span><span class="icon">▶</span></div>
+    `;
+    const audio = new Audio(c.song);
+    audio.addEventListener("ended", () => stop(el));
+
+    el.addEventListener("click", () => {
+      if (currentCard === el) { stop(el); return; }
+      if (currentCard) stop(currentCard);
+      audio.currentTime = 0;
+      audio.play();
+      el.classList.add("playing");
+      el.querySelector(".icon").textContent = "⏸";
+      currentAudio = audio;
+      currentCard = el;
+    });
+
+    function stop(card) {
+      if (currentAudio && currentCard === card) currentAudio.pause();
+      card.classList.remove("playing");
+      card.querySelector(".icon").textContent = "▶";
+      if (currentCard === card) { currentCard = null; currentAudio = null; }
+    }
+
+    grid.appendChild(el);
+  });
+</script>
 </body>
 </html>
